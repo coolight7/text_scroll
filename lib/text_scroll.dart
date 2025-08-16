@@ -1,4 +1,4 @@
-library text_scroll;
+library;
 
 import 'dart:async';
 
@@ -25,7 +25,7 @@ import 'package:flutter/material.dart';
 class TextScroll extends StatefulWidget {
   const TextScroll(
     this.text, {
-    Key? key,
+    super.key,
     this.style,
     this.textAlign,
     this.textDirection = TextDirection.ltr,
@@ -41,7 +41,7 @@ class TextScroll extends StatefulWidget {
     this.fadedBorderWidth = 0.2,
     this.fadeBorderSide = FadeBorderSide.both,
     this.fadeBorderVisibility = FadeBorderVisibility.auto,
-  }) : super(key: key);
+  });
 
   /// The text string, that would be scrolled.
   /// In case text does fit into allocated space, it wouldn't be scrolled
@@ -286,10 +286,7 @@ class _TextScrollState extends State<TextScroll> {
   void initState() {
     super.initState();
 
-    final WidgetsBinding? binding = WidgetsBinding.instance;
-    if (binding != null) {
-      binding.addPostFrameCallback(_initScroller);
-    }
+    WidgetsBinding.instance.addPostFrameCallback(_initScroller);
   }
 
   @override
@@ -327,7 +324,7 @@ class _TextScrollState extends State<TextScroll> {
       textDirection: widget.textDirection,
       child: SingleChildScrollView(
           controller: _scrollController,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -381,23 +378,30 @@ class _TextScrollState extends State<TextScroll> {
       ///Add first stop to list
       stops.insert(0, 0);
 
-      /// Pre-render text to get it's width
-      final TextPainter textPrototype = TextPainter(
-        text: TextSpan(
-          text: _endlessText ?? widget.text,
-          style: widget.style,
-        ),
-        textDirection: widget.textDirection,
-        textScaler: MediaQuery.of(context).textScaler,
-        textWidthBasis: TextWidthBasis.longestLine,
-      )..layout();
+      double getTextWidth() {
+        /// Pre-render text to get it's width
+        final TextPainter textPrototype = TextPainter(
+          text: TextSpan(
+            text: _endlessText ?? widget.text,
+            style: widget.style,
+          ),
+          textDirection: widget.textDirection,
+          textScaler: MediaQuery.of(context).textScaler,
+          textWidthBasis: TextWidthBasis.longestLine,
+        )..layout();
+        final width = textPrototype.size.width;
+        textPrototype.dispose();
+        return width;
+      }
+
+      late final textWidth = getTextWidth();
 
       ///Apply ShaderMask to the text
       fadeBorderWidget = LayoutBuilder(
         builder: (context, constraints) {
           ///When text is wider than the widget, apply ShaderMask
           if (widget.fadeBorderVisibility == FadeBorderVisibility.always ||
-              constraints.maxWidth < textPrototype.size.width) {
+              constraints.maxWidth < textWidth) {
             return ShaderMask(
               blendMode: BlendMode.dstOut,
               shaderCallback: (rect) {
@@ -421,7 +425,7 @@ class _TextScrollState extends State<TextScroll> {
     return fadeBorderWidget ?? baseWidget;
   }
 
-  Future<void> _initScroller(_) async {
+  Future<void> _initScroller(Duration _) async {
     setState(() {
       _textMinWidth = _scrollController.position.viewportDimension;
     });
