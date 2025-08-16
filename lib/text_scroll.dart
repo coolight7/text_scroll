@@ -290,6 +290,13 @@ class _TextScrollState extends State<TextScroll> {
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(covariant TextScroll oldWidget) {
     _onUpdate(oldWidget);
 
@@ -299,12 +306,6 @@ class _TextScrollState extends State<TextScroll> {
     }
 
     super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   @override
