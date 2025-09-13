@@ -277,7 +277,6 @@ class _TextScrollState extends State<TextScroll> {
   final _scrollController = ScrollController();
   String? _endlessText;
   double? _originalTextWidth;
-  double _textMinWidth = 0;
   Timer? _timer;
   bool _running = false;
   int _counter = 0;
@@ -327,22 +326,17 @@ class _TextScrollState extends State<TextScroll> {
           controller: _scrollController,
           physics: const NeverScrollableScrollPhysics(),
           scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: _textMinWidth,
-            ),
-            child: widget.selectable
-                ? SelectableText(
-                    _endlessText ?? widget.text,
-                    style: widget.style,
-                    textAlign: widget.textAlign,
-                  )
-                : Text(
-                    _endlessText ?? widget.text,
-                    style: widget.style,
-                    textAlign: widget.textAlign,
-                  ),
-          )),
+          child: widget.selectable
+              ? SelectableText(
+                  _endlessText ?? widget.text,
+                  style: widget.style,
+                  textAlign: widget.textAlign,
+                )
+              : Text(
+                  _endlessText ?? widget.text,
+                  style: widget.style,
+                  textAlign: widget.textAlign,
+                )),
     );
 
     /// Used to add the fade border effect, if enabled
@@ -427,10 +421,6 @@ class _TextScrollState extends State<TextScroll> {
   }
 
   Future<void> _initScroller(Duration _) async {
-    setState(() {
-      _textMinWidth = _scrollController.position.viewportDimension;
-    });
-
     await _delayBefore();
     _setTimer();
   }
@@ -487,9 +477,11 @@ class _TextScrollState extends State<TextScroll> {
     if (!_available) return;
 
     final ScrollPosition position = _scrollController.position;
-    final bool needsScrolling = position.maxScrollExtent > 0;
+    final bool needsScrolling = position.maxScrollExtent > 1;
     if (!needsScrolling) {
-      if (_endlessText != null) setState(() => _endlessText = null);
+      if (_endlessText != null) {
+        setState(() => _endlessText = null);
+      }
       return;
     }
 
@@ -576,7 +568,7 @@ class _TextScrollState extends State<TextScroll> {
         _endlessText = null;
         _originalTextWidth = null;
       });
-      _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+      // _scrollController.jumpTo(_scrollController.position.minScrollExtent);
     }
   }
 
