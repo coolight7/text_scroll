@@ -37,6 +37,7 @@ dependencies:
   text_scroll:
     path: ../
 
+  material_ui: any
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
